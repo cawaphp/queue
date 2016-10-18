@@ -1,0 +1,36 @@
+{
+    "name": "cawaphp/queue",
+    "description": "Сáша Queue",
+    "keywords": [
+        "cawa",
+        "queue",
+        "amqp",
+        "redis",
+        "rabbitmq"
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "tchiotludo"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Cawa\\Queue\\": "src"
+        }
+    },
+    "require": {
+        "php": "~7.0",
+        "cawaphp/cawa" : "dev-master",
+        "cawaphp/console" : "dev-master"
+    },
+    "suggest": {
+        "php-amqplib/php-amqplib": "Needed for amqp storage",
+        "ext-redis": "Needed for redis storage"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~5.5"
+    }
+}
