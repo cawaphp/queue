@@ -16,6 +16,7 @@ namespace Cawa\Queue\Drivers;
 use Cawa\HttpClient\HttpClient;
 use Cawa\Net\Uri;
 use Cawa\Queue\Exceptions\FailureException;
+use Cawa\Queue\Message;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -183,7 +184,7 @@ class Amqp extends AbstractDriver
             $quit = $quitNeeded;
         };
 
-        $consumerTag = $this->channel->basic_consume(
+        $this->workerId = $this->channel->basic_consume(
             $name,
             '',
             false,
@@ -194,12 +195,20 @@ class Amqp extends AbstractDriver
             {
                 $count++;
                 try {
-                    $return = $callback($quitFunction, $message->getBody());
-                    $this->handleAck($name, $return, $message);
-                } catch (FailureException $exception) {
-                    $this->publishMessage($name . '_failed', $message);
+                    $return = $callback((new Message($quitFunction, $this->workerId))
+                        ->setMessage($message->getBody())
+                    );
 
-                    throw $exception;
+
+                    if (!is_null($return) && $return === true) {
+                        $this->channel->basic_ack($message->delivery_info['delivery_tag']);
+                    } else if (!is_null($return) && $return === false) {
+                        $this->channel->basic_nack($message->delivery_info['delivery_tag']);
+                    } else {
+                        throw new \RuntimeException('Envelope must be (n)acked');
+                    }
+                } catch (FailureException $exception) {
+                    $this->publishMessage($name . '_failed', new AMQPMessage($exception->getQueueMessage()->getMessage()));
                 }
             });
 
@@ -213,39 +222,13 @@ class Amqp extends AbstractDriver
                 $this->channel->wait();
             }
 
-            $callback($quitFunction);
+            $callback(new Message($quitFunction, $this->workerId));
 
             if ($quit == true) {
-                $this->channel->basic_cancel($consumerTag);
+                $this->channel->basic_cancel($this->workerId);
             }
         }
 
         return $count;
-    }
-
-    /**
-     * @param string $name
-     * @param AMQPMessage $msg
-     *
-     * @return bool
-     */
-    protected function ack(string $name, $msg) : bool
-    {
-        $this->channel->basic_ack($msg->delivery_info['delivery_tag']);
-
-        return true;
-    }
-
-    /**
-     * @param string $name
-     * @param AMQPMessage $msg
-     *
-     * @return bool
-     */
-    protected function nack(string $name, $msg) : bool
-    {
-        $this->channel->basic_nack($msg->delivery_info['delivery_tag']);
-
-        return true;
     }
 }

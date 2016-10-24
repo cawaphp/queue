@@ -14,6 +14,7 @@ declare (strict_types = 1);
 namespace Cawa\Queue\Drivers;
 
 use Cawa\Queue\Exceptions\FailureException;
+use Cawa\Queue\Message;
 
 class Redis extends AbstractDriver implements CountableInterface
 {
@@ -139,6 +140,11 @@ class Redis extends AbstractDriver implements CountableInterface
             $quit = $quitNeeded;
         };
 
+        if (!$this->workerId) {
+            $this->workerId = md5(uniqid());
+            $this->client->client('setname', $this->workerId);
+        }
+
         $count = 0;
         while(!$quit)
         {
@@ -149,7 +155,13 @@ class Redis extends AbstractDriver implements CountableInterface
 
                 $message = $pop[1];
 
-                $add = $this->client->zAdd($this->getKey($name, self::TYPE_PROCESSING), time(), $message);
+                $processing = json_encode([
+                    'message' => $message,
+                    'worker' => $this->workerId,
+                    'uid' => md5(uniqid()),
+                ]);
+
+                $add = $this->client->zAdd($this->getKey($name, self::TYPE_PROCESSING), time(), $processing);
                 if ($add !== 1) {
                     throw new \LogicException(sprintf(
                         "Incorrect ZADD return with '%s' on queue '%s'",
@@ -159,41 +171,36 @@ class Redis extends AbstractDriver implements CountableInterface
                 }
 
                 try {
-                    $return = $callback($quitFunction, $message);
-                    $this->handleAck($name, $return, $message);
+                    $return = $callback((new Message($quitFunction, $this->workerId))
+                        ->setMessage($message)
+                    );
+
+                    if (!is_null($return) && $return === true) {
+                        $this->client->zRem($this->getKey($name, self::TYPE_PROCESSING), $processing);
+                    } else if (!is_null($return) && $return === false) {
+                        $this->publish($this->getKey($name), $message);
+                    } else {
+                        throw new \RuntimeException('Envelope must be (n)acked');
+                    }
                 } catch (FailureException $exception) {
                     $this->client->multi()
-                        ->zRem($this->getKey($name, self::TYPE_PROCESSING), $message)
-                        ->zAdd($this->getKey($name, self::TYPE_FAILED), time(), $message)
+                        ->zRem(
+                            $this->getKey($name, self::TYPE_PROCESSING),
+                            $processing
+                        )
+                        ->zAdd(
+                            $this->getKey($name, self::TYPE_FAILED),
+                            time(),
+                            $exception->getQueueMessage()->getMessage()
+                        )
                     ->exec();
-
-                    throw $exception;
                 }
             }
 
-            $callback($quitFunction);
+            $callback(new Message($quitFunction, $this->workerId));
         }
 
         return $count;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function ack(string $name, $msg) : bool
-    {
-        $this->client->zRem($this->getKey($name, self::TYPE_PROCESSING), $msg);
-
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-
-    protected function nack(string $name, $msg) : bool
-    {
-        return $this->publish($name, $msg);
     }
 
     const TYPE_QUEUE = 'queue';

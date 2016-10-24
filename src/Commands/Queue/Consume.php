@@ -15,6 +15,8 @@ namespace Cawa\Queue\Commands\Queue;
 
 use Cawa\Console\UserException;
 use Cawa\Queue\Commands\AbstractConsume;
+use Cawa\Queue\Envelope;
+use Cawa\Queue\Message;
 use Cawa\Queue\Queue;
 use Cawa\Queue\QueueFactory;
 use Symfony\Component\Console\Input\InputInterface;
@@ -63,22 +65,20 @@ class Consume extends AbstractConsume
     {
         parent::execute($input, $output);
 
-        $this->queue->consume(function(callable $quit, $envelope = null)
+        $this->queue->consume(function(Message $message)
         {
-            return $this->consumeCallback($quit, $envelope);
+            return $this->consumeCallback($message);
         });
 
-        return 0;
+        return $this->sendExitCode();
     }
 
     /**
-     * @param string $message
-     *
-     * @return bool
+     * {@inheritdoc}
      */
-    protected function consume($message) : bool
+    protected function consume(Message $message, Envelope $envelope = null) : bool
     {
-        $this->output->writeln('new message: ' . $message);
+        $this->output->writeln('new message: ' . $message->getMessage());
 
         return true;
     }

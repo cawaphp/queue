@@ -33,6 +33,19 @@ abstract class AbstractDriver
     }
 
     /**
+     * @var string
+     */
+    protected $workerId;
+
+    /**
+     * @return string
+     */
+    public function getWorkerId() : string
+    {
+        return $this->workerId;
+    }
+
+    /**
      * Connect to a queue.
      *
      * @return bool
@@ -101,43 +114,4 @@ abstract class AbstractDriver
      * @return int
      */
     abstract public function consume(string $name, callable $callback, callable $quit = null) : int;
-
-    /**
-     * Handle return for ack.
-     *
-     * @param string $name
-     * @param bool $return
-     * @param $msg
-     */
-    protected function handleAck(string $name, $return, $msg)
-    {
-        if (!is_null($return) && $return === true) {
-            $this->ack($name, $msg);
-        } else if (!is_null($return) && $return === false) {
-            $this->nack($name, $msg);
-        } else {
-            throw new \RuntimeException('Envelope must be (n)acked');
-        }
-    }
-
-    /**
-     * Ack a message to storage.
-     *
-     * @param string $name
-     * @param $msg
-     *
-     * @return bool
-     */
-    abstract protected function ack(string $name, $msg) : bool;
-
-    /**
-     * NAck a message to storage.
-     * The message is requeued
-     *
-     * @param string $name
-     * @param $msg
-     *
-     * @return bool
-     */
-    abstract protected function nack(string $name, $msg) : bool;
 }

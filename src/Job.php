@@ -13,6 +13,10 @@ declare (strict_types = 1);
 
 namespace Cawa\Queue;
 
+use Cawa\Console\Command;
+use Cawa\Queue\Exceptions\InvalidException;
+use Symfony\Component\Console\Input\ArrayInput;
+
 class Job extends Envelope
 {
     /**
@@ -43,5 +47,32 @@ class Job extends Envelope
         $this->headers['class'] = $class;
 
         return $this;
+    }
+
+    /**
+     * @throws InvalidException
+     *
+     * @return Command
+     */
+    public function getCommand() : Command
+    {
+        $class = $this->getClass();
+
+        if (!class_exists($class)) {
+            throw new InvalidException(sprintf("Undefined class '%s'", $class));
+        }
+
+        $command = new $class();
+
+        if (!$command instanceof Command) {
+            throw new InvalidException(sprintf("Invalid class '%s'", $class));
+        }
+
+        $input = new ArrayInput($this->getBody(), $command->getDefinition());
+
+        $command->setInput($input)
+            ->setStart();
+
+        return $command;
     }
 }

@@ -62,7 +62,7 @@ class Publish extends Command
 
         $job = new Job($input->getArgument('class'), $json);
 
-        $queue->queue($job);
+        $queue->publish($job->serialize());
 
         return 0;
     }

@@ -18,6 +18,7 @@ use Cawa\Console\ConsoleOutput;
 use Cawa\Console\UserException;
 use Cawa\Queue\Drivers\CountableInterface;
 use Cawa\Queue\Envelope;
+use Cawa\Queue\Message;
 use Cawa\Queue\Queue;
 use Cawa\Queue\QueueFactory;
 use Symfony\Component\Console\Input\InputArgument;
@@ -55,49 +56,51 @@ abstract class AbstractConsume extends Command
     /**
      * @var int
      */
-    protected $start;
+    protected $exitCode;
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @throws UserException
-     *
      * @return int
+     */
+    protected function sendExitCode() : int
+    {
+        return !is_null($this->exitCode) ? $this->exitCode : 0;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         /** @var ConsoleOutput $output */
         $output->setPrefix(ConsoleOutput::PREFIX_TIMESTAMP);
 
-        $this->start = time();
         $this->queue = self::queue($input->getOption('queue'));
 
         if ($this->input->getOption('stop-when-empty') && !$this->queue->getStorage() instanceof CountableInterface) {
             throw new UserException("Can't use stop-when-empty on '" . $this->queue->getType() . "' storage");
         }
 
-        return 0;
+        return parent::execute($input, $output);
     }
 
     /**
-     * @param callable $quit
-     * @param Envelope|string|null $envelope
+     * @param Message $message
+     * @param Envelope $envelope
      *
      * @return bool
      */
-    protected function consumeCallback(callable $quit, $envelope = null) : bool
+    protected function consumeCallback(Message $message, Envelope $envelope = null) : bool
     {
-        if ($envelope) {
+        if ($message->getMessage()) {
             $this->count++;
         }
 
-        if ($envelope) {
-            return $this->consume($envelope);
+        if ($message->getMessage()) {
+            return $this->consume($message, $envelope);
         }
 
         if ($this->mustQuit()) {
-            $quit(true);
+            $message->quit(true);
         }
 
         return true;
@@ -108,6 +111,10 @@ abstract class AbstractConsume extends Command
      */
     protected function mustQuit() : bool
     {
+        if (!is_null($this->exitCode)) {
+            return true;
+        }
+
         if ($this->input->getOption('max-messages') && $this->count >= (int) $this->input->getOption('max-messages')) {
             return true;
         }
@@ -124,9 +131,10 @@ abstract class AbstractConsume extends Command
     }
 
     /**
-     * @param string|Envelope|null $message
+     * @param Message $message
+     * @param Envelope $envelope
      *
      * @return bool
      */
-    abstract protected function consume($message) : bool;
+    abstract protected function consume(Message $message, Envelope $envelope = null) : bool;
 }

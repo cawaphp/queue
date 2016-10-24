@@ -21,6 +21,8 @@ namespace CawaTest\Queue;
 use Cawa\Date\DateTime;
 use Cawa\Queue\Drivers\CountableInterface;
 use Cawa\Queue\Envelope;
+use Cawa\Queue\Exceptions\FailureException;
+use Cawa\Queue\Message;
 use Cawa\Queue\Queue;
 use Cawa\Queue\QueueFactory;
 use PHPUnit_Framework_TestCase as TestCase;
@@ -78,18 +80,22 @@ abstract class AbstractTest extends TestCase
 
         $time = time();
         $received = [];
-        $count = $this->queue->consume(function (callable $quit, $message = null) use (
+        $count = $this->queue->consume(function (Message $message) use (
             &$received,
             $publishs,
             $time
         ) {
-            if ($message) {
-                $received[] = (string) $message;
+            if ($message->getMessage()) {
+                $this->assertInternalType('string', $message->getMessage());
+
+                $received[] = (string) $message->getMessage();
 
                 return true;
             }
 
-            $this->shouldQuit($quit, sizeof($received) == sizeof($publishs), $time);
+            $this->assertInternalType('string', $message->getWorkerId());
+
+            $this->shouldQuit($message, sizeof($received) == sizeof($publishs), $time);
 
             return null;
         });
@@ -99,18 +105,18 @@ abstract class AbstractTest extends TestCase
     }
 
     /**
-     * @param callable $quit
+     * @param Message $message
      * @param bool $mustQuit
      * @param int $time
      */
-    public function shouldQuit(callable $quit, bool $mustQuit, int $time)
+    public function shouldQuit(Message $message, bool $mustQuit, int $time)
     {
         if ($mustQuit) {
-            $quit(true);
+            $message->quit(true);
         } else if ($this->queue->getStorage() instanceof CountableInterface && $this->queue->count() == 0) {
-            $quit(true);
+            $message->quit(true);
         } else if ($time + 3 < time()) {
-            $quit(true);
+            $message->quit(true);
         }
     }
 
@@ -122,12 +128,12 @@ abstract class AbstractTest extends TestCase
     public function testEnvelope(array $publishs)
     {
         foreach ($publishs as $publish) {
-            $this->queue->queue((new Envelope($publish)));
+            $this->queue->publish((new Envelope($publish))->serialize());
         }
 
         $time = time();
         $received = [];
-        $this->queue->enqueue(function (callable $quit, Envelope $envelope = null) use (&$received, $publishs, $time) {
+        $this->queue->consume(Envelope::callback(function (Message $message, Envelope $envelope = null) use (&$received, $publishs, $time) {
             if ($envelope) {
                 $this->assertInstanceOf(DateTime::class, $envelope->getAdded());
                 $received[] = $envelope->getBody();
@@ -135,10 +141,10 @@ abstract class AbstractTest extends TestCase
                 return true;
             }
 
-            $this->shouldQuit($quit, sizeof($received) == sizeof($publishs), $time);
+            $this->shouldQuit($message, sizeof($received) == sizeof($publishs), $time);
 
             return null;
-        });
+        }));
 
         $this->assertEquals($publishs, $received);
     }
@@ -153,16 +159,37 @@ abstract class AbstractTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $time = time();
         $mustQuit = false;
-        $this->queue->consume(function (callable $quit, $message = null) use (&$received, $time, &$mustQuit) {
-            if ($message) {
+        $this->queue->consume(function (Message $message) use (&$received, $time, &$mustQuit) {
+            if ($message->getMessage()) {
                 $mustQuit = true;
             }
 
-            $this->shouldQuit($quit, $mustQuit, $time);
+            $this->shouldQuit($message, $mustQuit, $time);
 
             return null;
         });
     }
+
+    /**
+     *
+     */
+    public function testFailureException()
+    {
+        $this->queue->publish('string');
+
+        $time = time();
+        $mustQuit = false;
+        $this->queue->consume(function (Message $message) use (&$received, $time, &$mustQuit) {
+            if ($message->getMessage()) {
+                throw new FailureException($message, 'Should not be raise and requeue on failed queue');
+            }
+
+            $this->shouldQuit($message, $mustQuit, $time);
+
+            return null;
+        });
+    }
+
 
     /**
      * @return array

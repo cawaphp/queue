@@ -85,9 +85,35 @@ class Envelope implements \JsonSerializable
         return DateTime::createFromTimestampUTC($this->headers['added']);
     }
 
+    /**
+     * @return array|EnvelopeHistory[]
+     */
+    public function getHistory() : array
+    {
+        return $this->headers['history'] ?: [];
+    }
+
     //endregion
 
     //region Serialize
+
+    /**
+     * @param callable $callback
+     *
+     * @return callable
+     */
+    public static function callback(callable $callback) : callable
+    {
+        return function (Message $message) use ($callback) {
+            if ($message->getMessage()) {
+                $return = Envelope::unserialize($message->getMessage());
+                $return->headers['history'][] = new EnvelopeHistory($message->getWorkerId());
+                return $callback($message, $return);
+            } else {
+                return $callback($message);
+            }
+        };
+    }
 
     /**
      * @return string
