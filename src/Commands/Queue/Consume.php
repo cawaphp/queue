@@ -65,8 +65,7 @@ class Consume extends AbstractConsume
     {
         parent::execute($input, $output);
 
-        $this->queue->consume(function(Message $message)
-        {
+        $this->queue->consume(function (Message $message) {
             return $this->consumeCallback($message);
         });
 

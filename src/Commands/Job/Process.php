@@ -14,8 +14,8 @@ declare (strict_types = 1);
 namespace Cawa\Queue\Commands\Job;
 
 use Cawa\Console\Application;
-use Cawa\Queue\Envelope;
 use Cawa\Queue\Commands\AbstractConsume;
+use Cawa\Queue\Envelope;
 use Cawa\Queue\Exceptions\FailureException;
 use Cawa\Queue\Exceptions\InvalidException;
 use Cawa\Queue\Job;
@@ -68,10 +68,11 @@ class Process extends AbstractConsume
      * @param Message $message
      * @param Envelope|Job $envelope
      *
-     * @return bool
      * @throws FatalThrowableError
      * @throws InvalidException
      * @throws \Throwable
+     *
+     * @return bool
      */
     protected function consume(Message $message, Envelope $envelope = null) : bool
     {
@@ -101,7 +102,6 @@ class Process extends AbstractConsume
 
             return $return;
         } catch (\Throwable $exception) {
-
             if (!$exception instanceof \Exception) {
                 $exception = new FatalThrowableError($exception);
             }
@@ -124,7 +124,6 @@ class Process extends AbstractConsume
                 if ($this->input->getOption('retry') > count($envelope->getHistory())) {
                     $this->queue()->publish($envelope->serialize());
                 } else {
-
                     $errorMessage = sprintf(
                         "Max retries %s reach for %s on job '%s' with message '%s'",
                         $this->input->getOption('retry'),

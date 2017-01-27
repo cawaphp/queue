@@ -13,8 +13,6 @@ declare (strict_types = 1);
 
 namespace Cawa\Queue\Drivers;
 
-use Cawa\Queue\Envelope;
-
 abstract class AbstractDriver
 {
     /**

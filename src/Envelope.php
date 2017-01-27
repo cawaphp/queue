@@ -108,6 +108,7 @@ class Envelope implements \JsonSerializable
             if ($message->getMessage()) {
                 $return = Envelope::unserialize($message->getMessage());
                 $return->headers['history'][] = new EnvelopeHistory($message->getWorkerId());
+
                 return $callback($message, $return);
             } else {
                 return $callback($message);

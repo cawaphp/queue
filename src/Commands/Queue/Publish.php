@@ -14,7 +14,6 @@ declare (strict_types = 1);
 namespace Cawa\Queue\Commands\Queue;
 
 use Cawa\Console\Command;
-use Cawa\Queue\Envelope;
 use Cawa\Queue\QueueFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

@@ -35,15 +35,15 @@ class AmqpTest extends AbstractTest
         }
 
         DI::config()->add([
-            "queue" => [
-                "default" => [
-                    "type" => "Amqp",
+            'queue' => [
+                'default' => [
+                    'type' => 'Amqp',
                     'name' => 'testsqueue',
-                    "config" => [
-                        "url" => "rabbitmq://guest:guest@localhost/",
+                    'config' => [
+                        'url' => 'rabbitmq://guest:guest@localhost/',
                         'wait' => true,
-                        "queue" => [
-                            "durable" => true,
+                        'queue' => [
+                            'durable' => true,
                         ],
                         'management' => [
                         ]
@@ -60,6 +60,6 @@ class AmqpTest extends AbstractTest
      */
     public function tearDown()
     {
-       $this->queue->getStorage()->disconnect();
+        $this->queue->getStorage()->disconnect();
     }
 }

@@ -118,7 +118,6 @@ class Amqp extends AbstractDriver
         return $created == $name;
     }
 
-
     /**
      * {@inheritdoc}
      */
@@ -128,7 +127,6 @@ class Amqp extends AbstractDriver
 
         return $count > 0;
     }
-
 
     /**
      * {@inheritdoc}
@@ -146,6 +144,7 @@ class Amqp extends AbstractDriver
     public function publish(string $name, string $payload) : bool
     {
         $envelope = new AMQPMessage($payload);
+
         return $this->publishMessage($name, $envelope);
     }
 
@@ -179,8 +178,7 @@ class Amqp extends AbstractDriver
         $count = 0;
         $quit = false;
 
-        $quitFunction = function($quitNeeded) use (&$quit)
-        {
+        $quitFunction = function ($quitNeeded) use (&$quit) {
             $quit = $quitNeeded;
         };
 
@@ -191,18 +189,16 @@ class Amqp extends AbstractDriver
             false,
             false,
             false,
-            function(AMQPMessage $message) use ($callback, &$count, &$quitFunction, $name)
-            {
+            function (AMQPMessage $message) use ($callback, &$count, &$quitFunction, $name) {
                 $count++;
                 try {
                     $return = $callback((new Message($quitFunction, $this->workerId))
                         ->setMessage($message->getBody())
                     );
 
-
                     if (!is_null($return) && $return === true) {
                         $this->channel->basic_ack($message->delivery_info['delivery_tag']);
-                    } else if (!is_null($return) && $return === false) {
+                    } elseif (!is_null($return) && $return === false) {
                         $this->channel->basic_nack($message->delivery_info['delivery_tag']);
                     } else {
                         throw new \RuntimeException('Envelope must be (n)acked');

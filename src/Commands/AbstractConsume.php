@@ -71,7 +71,7 @@ abstract class AbstractConsume extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output) : int
     {
-        /** @var ConsoleOutput $output */
+        /* @var ConsoleOutput $output */
         $output->setPrefix(ConsoleOutput::PREFIX_TIMESTAMP);
 
         $this->queue = self::queue($input->getOption('queue'));

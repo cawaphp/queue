@@ -19,7 +19,6 @@ class EnvelopeHistory implements \JsonSerializable
 {
     /**
      * @var int
-     *
      */
     private $date;
 

@@ -31,12 +31,12 @@ class RedisTest extends AbstractTest
     public function setUp()
     {
         DI::config()->add([
-            "queue" => [
-                "default" => [
-                    "type" => "Redis",
+            'queue' => [
+                'default' => [
+                    'type' => 'Redis',
                     'name' => 'testsqueue',
-                    "config" => [
-                        "host" => "localhost"
+                    'config' => [
+                        'host' => 'localhost'
                     ]
                 ],
             ],
@@ -44,5 +44,4 @@ class RedisTest extends AbstractTest
 
         parent::setUp();
     }
-
 }

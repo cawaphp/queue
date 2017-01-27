@@ -28,7 +28,6 @@ class Message
 
     /**
      * @var callable
-     *
      */
     private $quit;
 

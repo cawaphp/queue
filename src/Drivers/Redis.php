@@ -135,8 +135,7 @@ class Redis extends AbstractDriver implements CountableInterface
     {
         $quit = false;
 
-        $quitFunction = function($quitNeeded) use (&$quit)
-        {
+        $quitFunction = function ($quitNeeded) use (&$quit) {
             $quit = $quitNeeded;
         };
 
@@ -146,8 +145,7 @@ class Redis extends AbstractDriver implements CountableInterface
         }
 
         $count = 0;
-        while(!$quit)
-        {
+        while (!$quit) {
             $pop = $this->client->blPop($this->getKey($name), 1);
 
             if (sizeof($pop) > 0) {
@@ -177,7 +175,7 @@ class Redis extends AbstractDriver implements CountableInterface
 
                     if (!is_null($return) && $return === true) {
                         $this->client->zRem($this->getKey($name, self::TYPE_PROCESSING), $processing);
-                    } else if (!is_null($return) && $return === false) {
+                    } elseif (!is_null($return) && $return === false) {
                         $this->publish($this->getKey($name), $message);
                     } else {
                         throw new \RuntimeException('Envelope must be (n)acked');

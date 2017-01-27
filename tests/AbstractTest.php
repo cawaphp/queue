@@ -113,9 +113,9 @@ abstract class AbstractTest extends TestCase
     {
         if ($mustQuit) {
             $message->quit(true);
-        } else if ($this->queue->getStorage() instanceof CountableInterface && $this->queue->count() == 0) {
+        } elseif ($this->queue->getStorage() instanceof CountableInterface && $this->queue->count() == 0) {
             $message->quit(true);
-        } else if ($time + 3 < time()) {
+        } elseif ($time + 3 < time()) {
             $message->quit(true);
         }
     }
@@ -189,7 +189,6 @@ abstract class AbstractTest extends TestCase
             return null;
         });
     }
-
 
     /**
      * @return array
