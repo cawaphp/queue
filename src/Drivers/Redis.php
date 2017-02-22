@@ -14,6 +14,7 @@ declare (strict_types = 1);
 namespace Cawa\Queue\Drivers;
 
 use Cawa\Queue\Exceptions\FailureException;
+use Cawa\Queue\Exceptions\ManualRequeueException;
 use Cawa\Queue\Message;
 
 class Redis extends AbstractDriver implements CountableInterface
@@ -192,6 +193,11 @@ class Redis extends AbstractDriver implements CountableInterface
                             $exception->getQueueMessage()->getMessage()
                         )
                     ->exec();
+                } catch (ManualRequeueException $exception) {
+                    $this->client->zRem(
+                        $this->getKey($name, self::TYPE_PROCESSING),
+                        $processing
+                    );
                 }
             }
 

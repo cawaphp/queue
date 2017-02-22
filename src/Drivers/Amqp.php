@@ -16,6 +16,7 @@ namespace Cawa\Queue\Drivers;
 use Cawa\HttpClient\HttpClient;
 use Cawa\Net\Uri;
 use Cawa\Queue\Exceptions\FailureException;
+use Cawa\Queue\Exceptions\ManualRequeueException;
 use Cawa\Queue\Message;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
@@ -205,7 +206,10 @@ class Amqp extends AbstractDriver
                     }
                 } catch (FailureException $exception) {
                     $this->publishMessage($name . '_failed', new AMQPMessage($exception->getQueueMessage()->getMessage()));
+                } catch (ManualRequeueException $exception) {
+                    $this->channel->basic_ack($message->delivery_info['delivery_tag']);
                 }
+
             });
 
         while (count($this->channel->callbacks)) {

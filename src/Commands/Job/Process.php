@@ -18,6 +18,7 @@ use Cawa\Queue\Commands\AbstractConsume;
 use Cawa\Queue\Envelope;
 use Cawa\Queue\Exceptions\FailureException;
 use Cawa\Queue\Exceptions\InvalidException;
+use Cawa\Queue\Exceptions\ManualRequeueException;
 use Cawa\Queue\Job;
 use Cawa\Queue\Message;
 use Cawa\Queue\QueueFactory;
@@ -123,6 +124,7 @@ class Process extends AbstractConsume
             if ($this->input->getOption('retry') && !$exception instanceof FailureException) {
                 if ($this->input->getOption('retry') > count($envelope->getHistory())) {
                     $this->queue()->publish($envelope->serialize());
+                    throw new ManualRequeueException();
                 } else {
                     $errorMessage = sprintf(
                         "Max retries %s reach for %s on job '%s' with message '%s'",
