@@ -14,6 +14,8 @@ declare (strict_types = 1);
 namespace Cawa\Queue\Commands\Job;
 
 use Cawa\Console\Application;
+use Cawa\Error\ErrorEvent;
+use Cawa\Events\DispatcherFactory;
 use Cawa\Queue\Commands\AbstractConsume;
 use Cawa\Queue\Envelope;
 use Cawa\Queue\Exceptions\FailureException;
@@ -31,6 +33,7 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
 class Process extends AbstractConsume
 {
     use QueueFactory;
+    use DispatcherFactory;
 
     /**
      *
@@ -115,6 +118,8 @@ class Process extends AbstractConsume
             ));
 
             Application::writeException($exception, $this->output, ConsoleOutputInterface::VERBOSITY_VERBOSE);
+
+            self::emit(new ErrorEvent($exception));
 
             if ($this->input->getOption('stop-on-error') && !$exception instanceof FailureException) {
                 $this->exitCode = 1;
