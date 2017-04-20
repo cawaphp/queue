@@ -45,7 +45,7 @@ class Process extends AbstractConsume
         $this->setName('job:process')
             ->setDescription('Process job from a queue')
             ->addOption('retry', null, InputOption::VALUE_OPTIONAL, 'Push to failed queued after x retries failed', 3)
-            ->addOption('stop-on-error', null, InputOption::VALUE_OPTIONAL, 'Stop consumer when an error occurs.', 0)
+            ->addOption('stop-on-error', null, InputOption::VALUE_OPTIONAL, 'Stop consumer when an error occurs.', 1)
         ;
     }
 
@@ -121,13 +121,12 @@ class Process extends AbstractConsume
 
             self::emit(new ErrorEvent($exception));
 
-            if ($this->input->getOption('stop-on-error') && !$exception instanceof FailureException) {
-                $this->exitCode = 1;
-                throw $exception;
-            }
-
             if ($this->input->getOption('retry') && !$exception instanceof FailureException) {
                 if ($this->input->getOption('retry') > count($envelope->getHistory())) {
+                    if ($this->input->getOption('stop-on-error')) {
+                        $this->exitCode = 1;
+                    }
+
                     $this->queue()->publish($envelope->serialize());
                     throw new ManualRequeueException();
                 } else {
@@ -142,6 +141,12 @@ class Process extends AbstractConsume
                     $this->output->writeError($errorMessage);
                     throw new FailureException($message, $errorMessage, $exception);
                 }
+            }
+
+
+            if ($this->input->getOption('stop-on-error') && !$exception instanceof FailureException) {
+                $this->exitCode = 1;
+                throw $exception;
             }
 
             return true;

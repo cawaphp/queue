@@ -18,19 +18,20 @@ use Cawa\Core\DI;
 trait QueueFactory
 {
     /**
-     * @param string $name
+     * @param string $name config key or class name
      *
      * @return Queue
      */
     private static function queue(string $name = null) : Queue
     {
-        if ($return = DI::get(__METHOD__, $name)) {
+        list($container, $config, $return) = DI::detect(__METHOD__, 'queue', $name);
+
+        if ($return) {
             return $return;
         }
 
-        $config = DI::config()->get('queue/' . ($name ?: 'default'));
         $db = new Queue($config);
 
-        return DI::set(__METHOD__, $name, $db);
+        return DI::set(__METHOD__, $container, $db);
     }
 }
