@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace Cawa\Queue\Drivers;
 
@@ -213,7 +213,6 @@ class Amqp extends AbstractDriver
                         throw $exception;
                     }
                 }
-
             });
 
         while (count($this->channel->callbacks)) {

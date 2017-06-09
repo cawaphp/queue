@@ -9,13 +9,12 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace Cawa\Queue;
 
 class Message
 {
-
     /**
      * @param callable $quit
      * @param string $workerId

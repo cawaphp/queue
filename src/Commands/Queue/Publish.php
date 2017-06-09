@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace Cawa\Queue\Commands\Queue;
 
@@ -45,7 +45,7 @@ class Publish extends Command
     protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $body = $input->getArgument('body');
-        $json = json_decode($input->getArgument('body'), true) ;
+        $json = json_decode($input->getArgument('body'), true);
         if (json_last_error() !== 0) {
             $body = $json;
         }

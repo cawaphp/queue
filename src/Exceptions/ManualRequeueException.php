@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace Cawa\Queue\Exceptions;
 
@@ -35,7 +35,7 @@ class ManualRequeueException extends \Exception
      * @param string $message
      * @param Throwable|null $previous
      */
-    public function __construct(bool $exit = false, $message = "", Throwable $previous = null)
+    public function __construct(bool $exit = false, $message = '', Throwable $previous = null)
     {
         parent::__construct($message, 0, $previous);
     }

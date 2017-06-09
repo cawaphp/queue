@@ -9,13 +9,14 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 /**
- * Сáша frameworks tests
+ * Сáша frameworks tests.
  *
  * @author tchiotludo <http://github.com/tchiotludo>
  */
+
 namespace CawaTest\Queue;
 
 use Cawa\Date\DateTime;

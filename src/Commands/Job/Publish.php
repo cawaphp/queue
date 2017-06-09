@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace Cawa\Queue\Commands\Job;
 
@@ -51,7 +51,7 @@ class Publish extends Command
     {
         $queue = self::queue($input->getOption('queue'));
 
-        $json = json_decode($input->getArgument('args'), true) ;
+        $json = json_decode($input->getArgument('args'), true);
         if (json_last_error() !== 0) {
             throw new UserException(sprintf("Invalid json for args with error '%s'", json_last_error_msg()));
         }

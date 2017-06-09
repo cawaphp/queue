@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace Cawa\Queue\Drivers;
 
@@ -115,7 +115,7 @@ class Redis extends AbstractDriver implements CountableInterface
             "return redis.call('llen', KEYS[1]) + redis.call('zcard', KEYS[2])",
             [
                 $this->getKey($name),
-                $this->getKey($name, self::TYPE_PROCESSING)
+                $this->getKey($name, self::TYPE_PROCESSING),
             ],
             2
         );

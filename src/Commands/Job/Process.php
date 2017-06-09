@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace Cawa\Queue\Commands\Job;
 
@@ -142,7 +142,6 @@ class Process extends AbstractConsume
                     throw new FailureException($message, $errorMessage, $exception);
                 }
             }
-
 
             if ($this->input->getOption('stop-on-error') && !$exception instanceof FailureException) {
                 $this->exitCode = 1;
