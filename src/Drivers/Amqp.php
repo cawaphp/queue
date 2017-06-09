@@ -207,7 +207,11 @@ class Amqp extends AbstractDriver
                 } catch (FailureException $exception) {
                     $this->publishMessage($name . '_failed', new AMQPMessage($exception->getQueueMessage()->getMessage()));
                 } catch (ManualRequeueException $exception) {
-                    $this->channel->basic_ack($message->delivery_info['delivery_tag']);
+                    $this->channel->basic_nack($message->delivery_info['delivery_tag']);
+
+                    if ($exception->isExit()) {
+                        throw $exception;
+                    }
                 }
 
             });

@@ -13,6 +13,30 @@ declare (strict_types = 1);
 
 namespace Cawa\Queue\Exceptions;
 
+use Throwable;
+
 class ManualRequeueException extends \Exception
 {
+    /**
+     * @var bool
+     */
+    private $exit = false;
+
+    /**
+     * @return bool
+     */
+    public function isExit() : bool
+    {
+        return $this->exit;
+    }
+
+    /**
+     * @param bool $exit
+     * @param string $message
+     * @param Throwable|null $previous
+     */
+    public function __construct(bool $exit = false, $message = "", Throwable $previous = null)
+    {
+        parent::__construct($message, 0, $previous);
+    }
 }

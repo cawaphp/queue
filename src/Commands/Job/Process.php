@@ -128,7 +128,7 @@ class Process extends AbstractConsume
                     }
 
                     $this->queue()->publish($envelope->serialize());
-                    throw new ManualRequeueException();
+                    throw new ManualRequeueException($this->input->getOption('stop-on-error') === 1);
                 } else {
                     $errorMessage = sprintf(
                         "Max retries %s reach for %s on job '%s' with message '%s'",

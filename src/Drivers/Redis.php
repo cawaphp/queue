@@ -198,6 +198,10 @@ class Redis extends AbstractDriver implements CountableInterface
                         $this->getKey($name, self::TYPE_PROCESSING),
                         $processing
                     );
+
+                    if ($exception->isExit()) {
+                        throw $exception;
+                    }
                 }
             }
 
