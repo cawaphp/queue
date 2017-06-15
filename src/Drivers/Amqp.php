@@ -14,6 +14,7 @@ declare(strict_types = 1);
 namespace Cawa\Queue\Drivers;
 
 use Cawa\HttpClient\HttpClient;
+use Cawa\HttpClient\HttpClientFactory;
 use Cawa\Net\Uri;
 use Cawa\Queue\Exceptions\FailureException;
 use Cawa\Queue\Exceptions\ManualRequeueException;
@@ -24,6 +25,8 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class Amqp extends AbstractDriver
 {
+    use HttpClientFactory;
+
     /**
      * @var AMQPStreamConnection
      */
@@ -60,7 +63,7 @@ class Amqp extends AbstractDriver
         $this->channel = $this->client->channel();
 
         if (isset($this->options['management'])) {
-            $this->httpClient = new HttpClient();
+            $this->httpClient = self::httpClient(self::class);
             $this->httpClient->setBaseUri((clone $uri)
                 ->setScheme('http')
                 ->setPort($this->options['management']['port'] ?? 15672)
