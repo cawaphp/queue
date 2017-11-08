@@ -41,7 +41,7 @@ class AmqpTest extends AbstractTest
                     'type' => 'Amqp',
                     'name' => 'testsqueue',
                     'config' => [
-                        'url' => 'rabbitmq://guest:guest@localhost/',
+                        'url' => 'rabbitmq://guest:guest@rabbitmq/',
                         'wait' => true,
                         'queue' => [
                             'durable' => true,

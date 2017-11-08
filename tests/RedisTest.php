@@ -37,7 +37,7 @@ class RedisTest extends AbstractTest
                     'type' => 'Redis',
                     'name' => 'testsqueue',
                     'config' => [
-                        'host' => 'localhost',
+                        'host' => 'redis',
                     ],
                 ],
             ],

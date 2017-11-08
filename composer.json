@@ -22,7 +22,7 @@
         }
     },
     "require": {
-        "php": "~7.0",
+        "php": "~7.1",
         "cawaphp/cawa" : "dev-master",
         "cawaphp/console" : "dev-master"
     },
@@ -31,7 +31,7 @@
         "ext-redis": "Needed for redis storage"
     },
     "require-dev": {
-        "phpunit/phpunit": "~5.5",
+        "phpunit/phpunit": "~6.4",
         "php-amqplib/php-amqplib": "^2.6",
         "cawaphp/httpclient" : "dev-master",
         "ext-redis": "*"

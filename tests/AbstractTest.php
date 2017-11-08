@@ -26,7 +26,7 @@ use Cawa\Queue\Exceptions\FailureException;
 use Cawa\Queue\Message;
 use Cawa\Queue\Queue;
 use Cawa\Queue\QueueFactory;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 
 abstract class AbstractTest extends TestCase
 {
@@ -118,6 +118,7 @@ abstract class AbstractTest extends TestCase
             $message->quit(true);
         } elseif ($time + 3 < time()) {
             $message->quit(true);
+            $this->assertEquals(true, true);
         }
     }
 
