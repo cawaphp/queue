@@ -90,15 +90,17 @@ class Process extends AbstractConsume
             $options = json_encode($job->getInput()->getOptions());
             $arguments = json_encode($job->getInput()->getArguments());
 
-            $arguments = strlen($arguments) > 50 ? substr($arguments, 0, 50) . '...' : $arguments;
-            $options = strlen($options) > 50 ? substr($options, 0, 50) . '...' : $options;
+            if (!$this->output->isDebug()) {
+                $arguments = strlen($arguments) > 50 ? substr($arguments, 0, 50) . '...' : $arguments;
+                $options = strlen($options) > 50 ? substr($options, 0, 50) . '...' : $options;
+            }
 
-            $this->output->write(sprintf(
+            $this->output->writeln(sprintf(
                 "New job for class '%s' with options '%s' and arguments '%s'",
                 $envelope->getClass(),
                 $options,
                 $arguments
-            ), OutputInterface::VERBOSITY_DEBUG);
+            ), OutputInterface::VERBOSITY_VERY_VERBOSE);
 
             $job->setOutput($this->output);
 

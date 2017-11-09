@@ -14,9 +14,12 @@ declare(strict_types = 1);
 namespace Cawa\Queue;
 
 use Cawa\Date\DateTime;
+use Cawa\Serializer\Json;
 
 class Envelope implements \JsonSerializable
 {
+    const HEADER_BODY_SERIALIZER = 'serializer';
+
     /**
      * @param mixed $body
      */
@@ -149,7 +152,12 @@ class Envelope implements \JsonSerializable
      */
     public function jsonUnserialize(array $data)
     {
-        $this->body = unserialize($data['body']);
+        if ($data['headers'][self::HEADER_BODY_SERIALIZER] ?? null == "json") {
+            $this->body = Json::decode($data['body']);
+        } else {
+            $this->body = unserialize($data['body']);
+        }
+
         $this->headers = $data['headers'];
     }
 
@@ -158,8 +166,14 @@ class Envelope implements \JsonSerializable
      */
     public function jsonSerialize()
     {
+        if ($this->headers[self::HEADER_BODY_SERIALIZER] ?? null == "json") {
+            $body = Json::encode($this->body);
+        } else {
+            $body = serialize($this->body);
+        }
+
         return [
-            'body' => serialize($this->body),
+            'body' => $body,
             'class' => get_class($this),
             'headers' => $this->headers,
         ];
