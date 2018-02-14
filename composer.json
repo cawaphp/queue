@@ -24,14 +24,15 @@
     "require": {
         "php": "~7.1",
         "cawaphp/cawa" : "dev-master",
-        "cawaphp/console" : "dev-master"
+        "cawaphp/console" : "dev-master",
+        "symfony/debug": "^4.0"
     },
     "suggest": {
         "php-amqplib/php-amqplib": "Needed for amqp storage",
         "ext-redis": "Needed for redis storage"
     },
     "require-dev": {
-        "phpunit/phpunit": "~6.4",
+        "phpunit/phpunit": "~7.0",
         "php-amqplib/php-amqplib": "^2.6",
         "cawaphp/httpclient" : "dev-master",
         "ext-redis": "*"
