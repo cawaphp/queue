@@ -96,7 +96,7 @@ class Process extends AbstractConsume
             }
 
             $this->output->writeln(sprintf(
-                "New job for class '%s' with options '%s' and arguments '%s'",
+                "New job with options '%s' and arguments '%s'",
                 $envelope->getClass(),
                 $options,
                 $arguments
